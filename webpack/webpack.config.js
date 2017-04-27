@@ -6,9 +6,10 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin;
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
-const debug = process.env.NODE_ENV !== 'production';
+const debug = process.env.WEBPACK_ENV !== 'production';
+console.log(process.env.WEBPACK_ENV);
 
-var entries = getEntry('src/scripts/**/*.js', 'src/scripts/');
+var entries = getEntry('src/scripts/entries/**/*.js', 'src/scripts/entries/');
 var chunks = Object.keys(entries);
 var config = {
     entry: entries,
@@ -23,18 +24,22 @@ var config = {
             {
                 test: /\.css$/,
                 loader: ExtractTextPlugin.extract('style', 'css')
-            }, {
+            }, 
+            {
                 test: /\.less$/,
                 loader: ExtractTextPlugin.extract('css!less')
-            }, {
+            }, 
+            {
                 test: /\.html$/,
                 loader: "html?-minimize"    //避免压缩html,https://github.com/webpack/html-loader/issues/50
-            }, {
+            }, 
+            {
                 test: /\.(woff|woff2|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: 'file-loader?name=fonts/[name].[ext]'
-            }, {
-                test: /\.(png|jpe?g|gif)$/,
-                loader: 'url-loader?limit=8192&name=imgs/[name]-[hash].[ext]'
+            }, 
+            {
+                test: /\.(png|jpg|gif)$/,
+                loader: 'url-loader?limit=8192&name=static/imgs/[name]-[hash].[ext]'
             }
         ]
     },
@@ -47,7 +52,7 @@ var config = {
             chunks: chunks,
             minChunks: chunks.length // 提取所有entry共同依赖的模块
         }),
-        new ExtractTextPlugin('styles/[name].css'), //单独使用link标签加载css并设置路径，相对于output配置中的publickPath
+        new ExtractTextPlugin('/static/styles/[name].css'), //单独使用link标签加载css并设置路径，相对于output配置中的publickPath
         debug ? function() {} : new UglifyJsPlugin({ //压缩代码
             compress: {
                 warnings: false
@@ -61,7 +66,7 @@ var config = {
 var pages = Object.keys(getEntry('src/views/**/*.tpl', 'src/views/'));
 pages.forEach(function(pathname) {
     var conf = {
-        filename: '../../views/' + pathname + '.tpl', //生成的html存放路径，相对于path
+        filename: 'views/' + pathname + '.tpl', //生成的html存放路径，相对于path
         template: 'src/views/' + pathname + '.tpl', //html模板路径
         inject: false,  //js插入的位置，true/'head'/'body'/false
     };

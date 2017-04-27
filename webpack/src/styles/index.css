@@ -1,0 +1,7 @@
+body {
+	background-color: red;
+}
+
+.img1 {
+	background: url('/static/imgs/img1.png');
+}
