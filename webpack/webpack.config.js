@@ -6,36 +6,17 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin;
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
-const debug = process.env.WEBPACK_ENV !== 'production';
-console.log(process.env.WEBPACK_ENV);
+const debug = process.env.NODE_ENV !== 'production';
 
-function getEntry(globPath, pathDir) {
-    var files = glob.sync(globPath);
-    var entries = {},
-        entry, dirname, basename, pathname, extname;
-
-    for (var i = 0; i < files.length; i++) {
-        entry = files[i];
-        dirname = path.dirname(entry);
-        extname = path.extname(entry);
-        basename = path.basename(entry, extname);
-        pathname = path.join(dirname, basename);
-        pathname = pathDir ? pathname.replace(new RegExp('^' + pathDir), '') : pathname;
-        entries[pathname] = ['./' + entry];
-    }
-    return entries;
-}
-
-var entries = getEntry('src/js/*.js', 'src/js/');
-
+var entries = getEntry('src/scripts/**/*.js', 'src/scripts/');
 var chunks = Object.keys(entries);
 var config = {
     entry: entries,
     output: {
         path: path.join(__dirname, '..'),
         publicPath: '',
-        filename: 'static/js/[name].js',
-        chunkFilename: 'js/[id].chunk.js?[chunkhash]'
+        filename: '/static/scripts/[name].js',
+        chunkFilename: 'scripts/[id].chunk.js?[chunkhash]'
     },
     module: {
         loaders: [ //加载器
@@ -53,7 +34,7 @@ var config = {
                 loader: 'file-loader?name=fonts/[name].[ext]'
             }, {
                 test: /\.(png|jpe?g|gif)$/,
-                loader: 'url-loader?limit=8192&name=img/[name]-[hash].[ext]'
+                loader: 'url-loader?limit=8192&name=imgs/[name]-[hash].[ext]'
             }
         ]
     },
@@ -73,34 +54,21 @@ var config = {
             },
             except: ['$super', '$', 'exports', 'require'] //排除关键字
         }),
-        new webpack.DefinePlugin({
-            'env': {
-                NODE_ENV: JSON.stringify('production')
-            }
-        })
     ]
 };
 
 
-var pages = Object.keys(getEntry('../views/*.tpl', '../views/'));
+var pages = Object.keys(getEntry('src/views/**/*.tpl', 'src/views/'));
 pages.forEach(function(pathname) {
     var conf = {
         filename: 'views/' + pathname + '.tpl', //生成的html存放路径，相对于path
         template: 'src/views/' + pathname + '.tpl', //html模板路径
-        inject: true,    //js插入的位置，true/'head'/'body'/false
-        /*
-        * 压缩这块，调用了html-minify，会导致压缩时候的很多html语法检查问题，
-        * 如在html标签属性上使用{{...}}表达式，所以很多情况下并不需要在此配置压缩项，
-        * 另外，UglifyJsPlugin会在压缩代码的时候连同html一起压缩。
-        * 为避免压缩html，需要在html-loader上配置'html?-minimize'，见loaders中html-loader的配置。
-         */
-        // minify: { //压缩HTML文件
-        //     removeComments: true, //移除HTML中的注释
-        //     collapseWhitespace: false //删除空白符与换行符
-        // }
+        inject: false,  //js插入的位置，true/'head'/'body'/false
     };
+    console.log(pathname);
+    console.log(config.entry);
     if (pathname in config.entry) {
-        conf.favicon = 'src/img/favicon.ico';
+        //conf.favicon = 'src/imgs/favicon.ico';
         conf.inject = 'body';
         conf.chunks = ['vendors', pathname];
         conf.hash = true;
@@ -110,3 +78,20 @@ pages.forEach(function(pathname) {
 
 
 module.exports = config;
+
+function getEntry(globPath, pathDir) {
+    var files = glob.sync(globPath);
+    var entries = {},
+        entry, dirname, basename, pathname, extname;
+
+    for (var i = 0; i < files.length; i++) {
+        entry = files[i];
+        dirname = path.dirname(entry);
+        extname = path.extname(entry);
+        basename = path.basename(entry, extname);
+        pathname = path.join(dirname, basename);
+        pathname = pathDir ? pathname.replace(new RegExp('^' + pathDir), '') : pathname;
+        entries[pathname] = ['./' + entry];
+    }
+    return entries;
+}

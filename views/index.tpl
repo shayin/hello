@@ -23,6 +23,8 @@
   </footer>
   <div class="backdrop"></div>
 
-  <script src="/static/js/reload.min.js"></script>
-<script type="text/javascript" src="static/js/vendors.js"></script><script type="text/javascript" src="static/js/test2.js"></script><script type="text/javascript" src="static/js/test1.js"></script></body>
+<script type="text/javascript" src="/static/scripts/vendors.js?dd2ce8853483d1b7bce0"></script>
+<script type="text/javascript" src="/static/scripts/index.js?dd2ce8853483d1b7bce0"></script>
+
+</body>
 </html>
