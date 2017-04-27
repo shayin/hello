@@ -13,9 +13,15 @@ var chunks = Object.keys(entries);
 var config = {
     entry: entries,
     output: {
+<<<<<<< HEAD
         path: path.join(__dirname, '..'),
         publicPath: '',
         filename: '/static/scripts/[name].js',
+=======
+        path: path.join(__dirname, 'public'),
+        publicPath: '/static/',
+        filename: 'scripts/[name].js',
+>>>>>>> b3a11ed625374290c02b6bf0716c0c5f1b8cc1af
         chunkFilename: 'scripts/[id].chunk.js?[chunkhash]'
     },
     module: {
@@ -61,9 +67,22 @@ var config = {
 var pages = Object.keys(getEntry('src/views/**/*.tpl', 'src/views/'));
 pages.forEach(function(pathname) {
     var conf = {
-        filename: 'views/' + pathname + '.tpl', //生成的html存放路径，相对于path
+        filename: '../../views/' + pathname + '.tpl', //生成的html存放路径，相对于path
         template: 'src/views/' + pathname + '.tpl', //html模板路径
         inject: false,  //js插入的位置，true/'head'/'body'/false
+<<<<<<< HEAD
+=======
+        /*
+        * 压缩这块，调用了html-minify，会导致压缩时候的很多html语法检查问题，
+        * 如在html标签属性上使用{{...}}表达式，所以很多情况下并不需要在此配置压缩项，
+        * 另外，UglifyJsPlugin会在压缩代码的时候连同html一起压缩。
+        * 为避免压缩html，需要在html-loader上配置'html?-minimize'，见loaders中html-loader的配置。
+         */
+        // minify: { //压缩HTML文件
+        //  removeComments: true, //移除HTML中的注释
+        //  collapseWhitespace: false //删除空白符与换行符
+        // }
+>>>>>>> b3a11ed625374290c02b6bf0716c0c5f1b8cc1af
     };
     console.log(pathname);
     console.log(config.entry);
