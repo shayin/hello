@@ -24,5 +24,5 @@
   <div class="backdrop"></div>
 
   <script src="/static/js/reload.min.js"></script>
-<script type="text/javascript" src="static/js/vendors.js"></script><script type="text/javascript" src="static/js/test2.js"></script><script type="text/javascript" src="static/js/test1.js"></script></body>
+<script type="text/javascript" src="/static/scripts/vendors.js?72c439f984981b2e71ed"></script><script type="text/javascript" src="/static/scripts/index.js?72c439f984981b2e71ed"></script></body>
 </html>
