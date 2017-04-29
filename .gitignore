@@ -1,6 +1,5 @@
-static
+static/
 webpack/node_modules
 hello	
 *.log
-static
-view
+views
