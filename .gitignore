@@ -3,3 +3,5 @@ webpack/node_modules
 hello	
 *.log
 views
+*.sublime-workspace
+*.sublime-project
