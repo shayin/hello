@@ -6,8 +6,9 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin;
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
-const debug = process.env.WEBPACK_ENV !== 'production';
-console.log(process.env.WEBPACK_ENV);
+const debug = process.env.WEBPACK_ENV !== 'pro';
+console.log("isdebug: " + debug);
+console.log("root path: " + path.join(__dirname, "src"));
 
 var entries = getEntry('src/scripts/entries/**/*.js', 'src/scripts/entries/');
 var chunks = Object.keys(entries);
@@ -16,30 +17,31 @@ var config = {
     output: {
         path: path.join(__dirname, '..'),
         publicPath: '',
-        filename: '/static/scripts/[name].js',
+        filename: 'static/scripts/[name].js',
         chunkFilename: 'scripts/[id].chunk.js?[chunkhash]'
+    },
+    resolve: {
+        root: [
+            path.join(__dirname, "src")
+        ]
     },
     module: {
         loaders: [ //加载器
             {
                 test: /\.css$/,
                 loader: ExtractTextPlugin.extract('style', 'css')
-            }, 
-            {
+            }, {
                 test: /\.less$/,
                 loader: ExtractTextPlugin.extract('css!less')
-            }, 
-            {
+            }, {
                 test: /\.html$/,
-                loader: "html?-minimize"    //避免压缩html,https://github.com/webpack/html-loader/issues/50
-            }, 
-            {
+                loader: "html?-minimize" //避免压缩html,https://github.com/webpack/html-loader/issues/50
+            }, {
                 test: /\.(woff|woff2|ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'file-loader?name=fonts/[name].[ext]'
-            }, 
-            {
-                test: /\.(png|jpg|gif)$/,
-                loader: 'url-loader?limit=8192&name=static/imgs/[name]-[hash].[ext]'
+                loader: 'file-loader?name=static/fonts/[name].[ext]'
+            }, {
+                test: /\.(png|jpe?g|gif)$/,
+                loader: 'url-loader?limit=8192&name=/static/imgs/[name]-[hash].[ext]'
             }
         ]
     },
@@ -63,11 +65,11 @@ var config = {
 };
 
 
-var pages = Object.keys(getEntry('src/views/**/*.tpl', 'src/views/'));
+var pages = Object.keys(getEntry('src/views/**/*.html', 'src/views/'));
 pages.forEach(function(pathname) {
     var conf = {
-        filename: 'views/' + pathname + '.tpl', //生成的html存放路径，相对于path
-        template: 'src/views/' + pathname + '.tpl', //html模板路径
+        filename: 'views/' + pathname + '.html', //生成的html存放路径，相对于path
+        template: 'src/views/' + pathname + '.html', //html模板路径
         inject: false,  //js插入的位置，true/'head'/'body'/false
     };
     console.log(pathname);
@@ -90,12 +92,22 @@ function getEntry(globPath, pathDir) {
         entry, dirname, basename, pathname, extname;
 
     for (var i = 0; i < files.length; i++) {
-        entry = files[i];
+        /*entry = files[i];
         dirname = path.dirname(entry);
         extname = path.extname(entry);
         basename = path.basename(entry, extname);
         pathname = path.join(dirname, basename);
         pathname = pathDir ? pathname.replace(new RegExp('^' + pathDir), '') : pathname;
+        entries[pathname] = ['./' + entry];*/
+        entry = files[i];
+        dirname = path.dirname(entry);
+        extname = path.extname(entry);
+        basename = path.basename(entry, extname);
+        pathname = path.normalize(path.join(dirname,  basename));
+        pathDir = path.normalize(pathDir);
+        if(pathname.startsWith(pathDir)){
+            pathname = pathname.substring(pathDir.length)
+        }
         entries[pathname] = ['./' + entry];
     }
     return entries;
