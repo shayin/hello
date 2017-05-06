@@ -104,7 +104,7 @@ if (env === 'dev') {
     }
     config.plugins.push(new webpack.HotModuleReplacementPlugin());
     var proxy = {
-        "*": "http://localhost:" + 9100
+        "*": "http://localhost:" + serverPort
     };
 
     fs.watch('./src/views/', function() {
