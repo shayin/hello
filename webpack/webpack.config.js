@@ -1,16 +1,25 @@
 var path = require('path');
 var glob = require('glob');
 var webpack = require('webpack');
+var fs = require('fs');
+var WebpackDevServer = require('webpack-dev-server');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin;
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
 const debug = process.env.WEBPACK_ENV !== 'pro';
+const env = process.env.WEBPAC_ENV;
+const imgLimit = 1;
+const serverPort = 9100;
+const devPort = 9101;
+var exec = require('child_process').exec;
 console.log("isdebug: " + debug);
 console.log("root path: " + path.join(__dirname, "src"));
 
 var entries = getEntry('src/scripts/entries/**/*.js', 'src/scripts/entries/');
+console.log(entries);
+
 var chunks = Object.keys(entries);
 var config = {
     entry: entries,
@@ -19,6 +28,11 @@ var config = {
         publicPath: '',
         filename: 'static/scripts/[name].js',
         chunkFilename: 'scripts/[id].chunk.js?[chunkhash]'
+    },
+    devServer:{
+        contentBase: path.join(__dirname, 'src'),
+        hot:true,
+        inline:true,
     },
     resolve: {
         root: [
@@ -41,7 +55,7 @@ var config = {
                 loader: 'file-loader?name=static/fonts/[name].[ext]'
             }, {
                 test: /\.(png|jpe?g|gif)$/,
-                loader: 'url-loader?limit=8192&name=/static/imgs/[name]-[hash].[ext]'
+                loader: 'url-loader?limit=' + imgLimit + '&name=/static/imgs/[name]-[hash].[ext]'
             }
         ]
     },
@@ -60,10 +74,9 @@ var config = {
                 warnings: false
             },
             except: ['$super', '$', 'exports', 'require'] //排除关键字
-        }),
+        })
     ]
 };
-
 
 var pages = Object.keys(getEntry('src/views/**/*.html', 'src/views/'));
 pages.forEach(function(pathname) {
@@ -73,7 +86,6 @@ pages.forEach(function(pathname) {
         inject: false,  //js插入的位置，true/'head'/'body'/false
     };
     console.log(pathname);
-    console.log(config.entry);
     if (pathname in config.entry) {
         //conf.favicon = 'src/imgs/favicon.ico';
         conf.inject = 'body';
@@ -83,8 +95,40 @@ pages.forEach(function(pathname) {
     config.plugins.push(new HtmlWebpackPlugin(conf));
 });
 
+if (env === 'dev') {
 
-module.exports = config;
+    for (var i in config.entry) {
+        if (config.entry.hasOwnProperty(i)) {
+            config.entry[i].unshift('webpack-dev-server/client?http://localhost:' + devPort, "webpack/hot/dev-server")
+        }
+    }
+    config.plugins.push(new webpack.HotModuleReplacementPlugin());
+    var proxy = {
+        "*": "http://localhost:" + 9100
+    };
+
+    fs.watch('./src/views/', function() {
+        exec('webpack --progress --hide-modules', function(err, stdout, stderr) {
+            if (err) {
+                console.log(stderr);
+            } else {
+                console.log(stdout);
+            }
+        });
+    });
+
+    //启动服务
+    var app = new WebpackDevServer(webpack(config), {
+        publicPath: '/static/',
+        hot: false,
+        proxy: proxy
+    });
+
+    app.listen(devPort, function() {
+        console.log('dev server on http://0.0.0.0:' + devPort +'\n');
+    });
+
+}
 
 function getEntry(globPath, pathDir) {
     var files = glob.sync(globPath);
@@ -92,13 +136,6 @@ function getEntry(globPath, pathDir) {
         entry, dirname, basename, pathname, extname;
 
     for (var i = 0; i < files.length; i++) {
-        /*entry = files[i];
-        dirname = path.dirname(entry);
-        extname = path.extname(entry);
-        basename = path.basename(entry, extname);
-        pathname = path.join(dirname, basename);
-        pathname = pathDir ? pathname.replace(new RegExp('^' + pathDir), '') : pathname;
-        entries[pathname] = ['./' + entry];*/
         entry = files[i];
         dirname = path.dirname(entry);
         extname = path.extname(entry);
@@ -112,3 +149,6 @@ function getEntry(globPath, pathDir) {
     }
     return entries;
 }
+
+
+module.exports = config;
